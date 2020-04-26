@@ -128,7 +128,7 @@ router.post('/api/v1/visualsearch', function (req, res) {
         imageFile.mv('./tmp/' + imageFile.name, function(err) {
             
             if (err) {
-                return res.status(500).send("An error occured while processing your request." + err);
+                return res.status(500).send("1. An error occured while processing your request." + err);
             } else {
                 
                 console.log("MKT is : " + req.body.mkt);
@@ -195,7 +195,7 @@ router.post('/api/v1/visualsearch', function (req, res) {
                     form.getLength(function(err, length) {
                         
                         if (err) {
-                            res.status(400).send("An error occured while processing your request.");
+                            res.status(400).send("2. An error occured while processing your request." + err);
                             return;
                         }
                         
@@ -211,7 +211,7 @@ router.post('/api/v1/visualsearch', function (req, res) {
                             });
                             
                             if (error) {
-                                res.status(400).send("An error occured while processing your request.");
+                                res.status(400).send("3. An error occured while processing your request." + err);
                             } else {
                                 res.status(200).send(JSON.stringify(JSON.parse(body)));
                             }
