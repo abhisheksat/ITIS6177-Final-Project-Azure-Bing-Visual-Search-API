@@ -128,7 +128,7 @@ router.post('/api/v1/visualsearch', function (req, res) {
         imageFile.mv('./tmp/' + imageFile.name, function(err) {
             
             if (err) {
-                return res.status(500).send("An error occured while processing your request.");
+                return res.status(500).send("An error occured while processing your request." + err);
             } else {
                 
                 console.log("MKT is : " + req.body.mkt);
