@@ -211,7 +211,7 @@ router.post('/api/v1/visualsearch', function (req, res) {
                             });
                             
                             if (error) {
-                                res.status(400).send("3. An error occured while processing your request." + err);
+                                res.status(400).send("3. An error occured while processing your request." + error);
                             } else {
                                 res.status(200).send(JSON.stringify(JSON.parse(body)));
                             }
