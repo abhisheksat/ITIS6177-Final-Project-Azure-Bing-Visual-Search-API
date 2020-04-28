@@ -24,6 +24,6 @@ app.use(fileUpload({
 swaggerDoc(app);
 
 var controller = require('./routes/controller.js');
-app.use('/', controller);
+app.use('/api/v1', controller);
 
 app.listen(process.env.PORT || 3000);

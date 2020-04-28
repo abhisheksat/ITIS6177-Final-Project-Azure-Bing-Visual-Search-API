@@ -9,7 +9,29 @@ var fs = require('fs');
 var request = require('request');
 var router = express.Router();
 
+var bcrypt = require('bcryptjs');
+var jwt = require('jsonwebtoken');
+
 var FormData = require('form-data');
+
+//  validate the jwtToken from request headers, proceed when valid
+const validateJWTToken = function (req, res, next) {
+
+    var jwtToken = req.headers['authkey'];
+    
+    if (!jwtToken) {
+        return res.status(403).send({ auth: false, message: "No auth-token provided." });
+    }
+
+    jwt.verify(jwtToken, process.env.SECRETKEY, function (err, decoded) {
+
+        if (err) {
+            return res.status(500).send({ auth: false, message: "The provided auth-token is invalid." });
+        }
+
+        next();
+    });
+}
 
 //  Upload Image
 //  It takes in the image to be passed to the Bing Visual Search API
@@ -50,6 +72,9 @@ var FormData = require('form-data');
  *     produces:
  *       - application/json
  *     parameters:
+ *       - name: authkey
+ *         in: header
+ *         type: String
  *       - name: image
  *         in: formData
  *         type: file
@@ -115,7 +140,7 @@ var FormData = require('form-data');
  *         description: Search results fetched successfully.
  *         
  */
-router.post('/api/v1/visualsearch', function (req, res) {
+router.post('/visualsearch', validateJWTToken, function (req, res) {
     
     var imageFile = req.files.image;
     
@@ -213,6 +238,7 @@ router.post('/api/v1/visualsearch', function (req, res) {
                             if (error) {
                                 res.status(400).send("3. An error occured while processing your request." + error);
                             } else {
+                                res.setHeader('Content-Type', 'application/json');
                                 res.status(200).send(JSON.stringify(JSON.parse(body)));
                             }
                         });
@@ -238,6 +264,76 @@ router.post('/api/v1/visualsearch', function (req, res) {
     } else {
         console.log("The uploaded is not an image file, it will be discarded.");
         res.status(400).send("The uploaded file is not an image file, it is discarded. Please provide an image file upto size 1 MB.");
+    }
+});
+
+/**
+ * @swagger
+ * definition:
+ *   error:
+ *     properties:
+ *       statusCode:
+ *         type: integer
+ *         format: int32
+ *         default: 401
+ *       message:
+ *         type: string
+ *       error:
+ *         type: string
+ *   success:
+ *     properties:
+ *       statusCode:
+ *         type: integer
+ *         format: int32
+ *         default: 200
+ *       message:
+ *         type: string
+ *       data:
+ *         type: object
+ * 
+ * /login:
+ *   post:
+ *     tags:
+ *       - Login to get auth-token
+ *     description:
+ *       Submit valid credentials and get JWT Auth-Token
+ *     consumes:
+ *       - multipart/form-data
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         in: formData
+ *         type: String
+ *       - name: password
+ *         in: formData
+ *         type: String
+ *     responses:
+ *       401:
+ *         description: Invalid user credentials, Auth failed.
+ *       200:
+ *         description: User authentication successful, JWT Auth-Token received.
+ *         
+ */
+router.post('/login', function (req, res) {
+
+    var userId = req.body.userId;
+    var password = req.body.password;
+
+    var userIdFromStore = process.env.USERID;
+    var passwordFromStore = process.env.PASSWORD;
+
+    if (userId === userIdFromStore && bcrypt.compareSync(password, passwordFromStore)) {
+        
+        var userSign = { user: userId };
+        
+        var jwtToken = jwt.sign(userSign, process.env.SECRETKEY, {
+            expiresIn: 300  //  jwtToken expires in 5 mins
+        });
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).send({ auth: true, jwtToken: jwtToken });
+    } else {
+        return res.status(401).send({ auth: false, jwtToken: null });
     }
 });
 
