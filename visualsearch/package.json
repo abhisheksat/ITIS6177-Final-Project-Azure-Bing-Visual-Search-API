@@ -17,7 +17,7 @@
     "express": "^4.17.1",
     "express-fileupload": "^1.1.7-alpha.3",
     "form-data": "^3.0.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "request": "^2.88.2",
     "swagger-jsdoc": "^4.0.0",
     "swagger-ui-dist": "^3.25.1",
